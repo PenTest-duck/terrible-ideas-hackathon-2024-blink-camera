@@ -9,7 +9,7 @@ faceCascade = cv2.CascadeClassifier(faceCascadePath)
 eyesCascade = cv2.CascadeClassifier(eyesCascadePath)
 
 # Start capturing video from laptop camera (0)
-print("Start video capture from camera")
+print("Start video capture from camera...")
 cam = cv2.VideoCapture(0) 
 
 while True:
@@ -30,7 +30,11 @@ while True:
     # flags = cv2.CASCADE_SCALE_IMAGE
   )
 
+  facesCount = 0
+  eyesCount = 0
   for (x, y, w, h) in faces:
+    facesCount += 1
+
     # Draw rectangles around the faces
     cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
 
@@ -43,8 +47,12 @@ while True:
 
     # Draw rectangles around the eyes
     for (ex, ey, ew, eh) in eyes:
+      eyesCount += 1
       cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
   
+  if facesCount > 0 and eyesCount == 0:
+    print("Can take photo!")
+
   # Display the parsed image on a window
   cv2.imshow("Camera output", image)
 
