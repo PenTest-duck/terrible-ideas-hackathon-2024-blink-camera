@@ -1,5 +1,6 @@
 import cv2
 from datetime import datetime
+from time import time
 
 SAVED_PHOTOS_PATH = "./photos/"
 
@@ -36,7 +37,7 @@ consecutive_closed = 0
 consecutive_open = 0
 
 state = STATE_DETECTING
-lastPhotoTakenTime = datetime.now()
+lastPhotoTakenTime = time()
 
 while True:
     # Debugging statements if needed
@@ -84,7 +85,8 @@ while True:
         cv2.putText(image, "Taking Photo. Get Ready!", TEXT_POSITION, TEXT_FONT, TEXT_FONT_SCALE, TEXT_COLOR_RED, TEXT_THICKNESS, cv2.LINE_AA)
     elif state == STATE_FINISH_PHOTO:
         cv2.putText(image, "Photo taken!", TEXT_POSITION, TEXT_FONT, TEXT_FONT_SCALE, TEXT_COLOR_GREEN, TEXT_THICKNESS, cv2.LINE_AA)
-        # if datetime.now() - lastPhotoTakenTime >= SECONDS_DISPLAY_PHOTO_TAKEN_MSG:
+        if time() - lastPhotoTakenTime >= SECONDS_DISPLAY_PHOTO_TAKEN_MSG:
+            state = STATE_DETECTING
 
 
     # Display the parsed image on a window
@@ -116,6 +118,7 @@ while True:
         photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
         cv2.imwrite(photoPath, rawImage)
 
+        lastPhotoTakenTime = time()
         state = STATE_FINISH_PHOTO
 
     key = cv2.waitKey(1) & 0xFF
