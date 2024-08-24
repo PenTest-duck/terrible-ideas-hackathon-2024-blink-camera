@@ -7,7 +7,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { grey } from '@mui/material/colors';
 import Carousel from 'react-material-ui-carousel';
 import ImageGallery from './components/gallery';
-import bigPhoto from './components/bigPhoto';
+// import bigPhoto from './components/bigPhoto';
 
 function App() {
   const theme = createTheme({
