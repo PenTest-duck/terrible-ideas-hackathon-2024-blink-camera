@@ -3,9 +3,9 @@ from datetime import datetime
 
 SAVED_PHOTOS_PATH = "./photos/"
 
-ATTACK_FRAMES_TOTAL = 5        # num total closed frames needed to take photo
-ATTACK_FRAMES_CONSECUTIVE = 3  # num consecutive closed frames needed
-RELEASE_FRAMES = 5             # num consecutive open frames needed to reset
+ATTACK_FRAMES_TOTAL = 1        # num total closed frames needed to take photo
+ATTACK_FRAMES_CONSECUTIVE = 1  # num consecutive closed frames needed
+RELEASE_FRAMES = 1            # num consecutive open frames needed to reset
 
 # Load Haar cascade classifiers
 # Cascade classifiers are a set of simple detectors which individually check for features that surmount to detect larger, more abstract features
@@ -24,10 +24,13 @@ consecutive_closed = 0
 consecutive_open = 0
 
 while True:
+    # Debugging statements if needed
+    # print(f"tc: {total_closed}, cc: {consecutive_closed}, co: {consecutive_open}")
+
     # Try to read a single frame of image from the camera
     ret, image = cam.read()
     if not ret:
-        continue  # wait for next frame
+        continue # wait for next frame
 
     # We convert the image to greyscale for easier detection
     frame = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
