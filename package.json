@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "react-modal-image": "^2.6.0"
+  },
+  "devDependencies": {
+    "@types/webpack-env": "^1.18.5"
+  }
+}
