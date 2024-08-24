@@ -1,42 +1,18 @@
 import cv2
 from datetime import datetime
-from pydub import AudioSegment
 from pydub.playback import play
 from scipy.spatial import distance as dist
 from imutils import face_utils
 import imutils
 import dlib
 import datetime
-from s3 import uploadToS3
 import threading
 import random
+
+# Imports from local files
+from s3 import uploadToS3
 from arduino import flash
-
-# When enabling this, don't forget to supply the credentials 
-# AWS_PROFILE="Terrible Hackathon" python3 main.py
-SHOULD_UPLOAD_IMAGES_TO_S3 = False
-
-SAVED_PHOTOS_PATH = "./photos/"
-SHUTTER_SOUND_PATH = "./assets/camera-shutter-sound.mp3"
-SHUTTER_SOUND = AudioSegment.from_mp3(SHUTTER_SOUND_PATH)
-SHAPE_PREDICTOR_MODEL_PATH = "./model/shape_predictor_68_face_landmarks.dat"
-
-EYE_AR_THRESH = 0.18           # maximum EAR value for closed eyes
-ATTACK_FRAMES_TOTAL = 3        # num total closed frames needed to take photo
-ATTACK_FRAMES_CONSECUTIVE = 2  # num consecutive closed frames needed
-RELEASE_FRAMES = 5             # num consecutive open frames needed to reset
-DELAY_TIME = 3                 # wait 3s before next photo
-DELTA_IMMEDIATE = 0.1          # if EAR decreases by > this much in some time
-                               # period then a photo is taken
-
-MAX_FLASH_DELAY = 3
-
-TEXT_POSITION = (300, 70)
-TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
-TEXT_FONT_SCALE = 2.0
-TEXT_COLOR_RED = (0, 0, 255)
-TEXT_COLOR_GREEN = (0, 255, 0)
-TEXT_THICKNESS = 2
+from constants import *
 
 def eye_aspect_ratio(eye):
     # compute the euclidean distances between the two sets of
@@ -82,16 +58,14 @@ def main():
     enabled = False
     flash_time = None
     while True:
-        #print(datetime.datetime.now())
-        if flash_time is not None and datetime.datetime.now() > flash_time:
+        if SHOULD_USE_ARDUINO_FLASH and flash_time is not None and datetime.datetime.now() > flash_time:
             print("flashing")
             flash(100)
             flash_time = None
 
-        #print(f"tc: {total_closed}, cc: {consecutive_closed}, co: {consecutive_open}")
-        # grab the frame from the video stream, resize
+        # Grab the frame from the video stream, resize
         # it, and convert it to grayscale
-        # channels)
+        # channels
         ret, frame_raw = vs.read()
         if not ret:
             continue
