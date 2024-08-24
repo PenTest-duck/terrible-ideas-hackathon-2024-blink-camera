@@ -1,9 +1,10 @@
-import { ListObjectsV2Command, ListObjectsV2CommandOutput, S3Client } from '@aws-sdk/client-s3';
+import { ListObjectsV2Command, ListObjectsV2CommandOutput } from '@aws-sdk/client-s3';
 import { Box } from '@mui/material';
 import ImageList from '@mui/material/ImageList';
 import ImageListItem from '@mui/material/ImageListItem';
 import ModalImage from "react-modal-image"
 import { useEffect, useState } from 'react';
+import { S3_BUCKET_NAME, S3_REGION, s3Client } from '../clients/s3-client';
 
 const styles = {
     container: {
@@ -14,26 +15,16 @@ const styles = {
     }
 };
 
-const BUCKET_NAME = "terrible-idea-hackathon-2024-blink-camera";
-const REGION = "us-east-2";
-const client = new S3Client({
-    region: REGION,
-    credentials: {
-        accessKeyId: process.env.REACT_APP_AWS_ACCESS_KEY_ID ?? "",
-        secretAccessKey: process.env.REACT_APP_AWS_SECRET_ACCESS_KEY ?? "",
-    },
-});
-
-function ImageGallery() {
+const ImageGallery = () => {
     const [imageObjs, setImageObjs] = useState<Required<ListObjectsV2CommandOutput>["Contents"]>([]);
 
     const listImagesInS3 = () => {
         const command = new ListObjectsV2Command({
-            Bucket: BUCKET_NAME,
+            Bucket: S3_BUCKET_NAME,
             MaxKeys: 100,
         });
 
-        client.send(command).then(({Contents}) => setImageObjs(Contents ?? []));
+        s3Client.send(command).then(({Contents}) => setImageObjs(Contents ?? []));
     };
     
     useEffect(() => {
@@ -47,8 +38,8 @@ function ImageGallery() {
                 <ImageListItem key={obj.Key}>
                     <div style={styles.container}>
                     <ModalImage
-                        small={`https://${BUCKET_NAME}.s3.${REGION}.amazonaws.com/${obj.Key}`}
-                        large={`https://${BUCKET_NAME}.s3.${REGION}.amazonaws.com/${obj.Key}`}
+                        small={`https://${S3_BUCKET_NAME}.s3.${S3_REGION}.amazonaws.com/${obj.Key}`}
+                        large={`https://${S3_BUCKET_NAME}.s3.${S3_REGION}.amazonaws.com/${obj.Key}`}
                     />
                     </div>
                     
