@@ -2,6 +2,8 @@ import { S3Client } from "@aws-sdk/client-s3";
 
 export const S3_BUCKET_NAME = "terrible-idea-hackathon-2024-blink-camera";
 export const S3_REGION = "us-east-2";
+export const S3_MAX_KEYS = 50
+
 export const s3Client = new S3Client({
     region: S3_REGION,
     credentials: {
