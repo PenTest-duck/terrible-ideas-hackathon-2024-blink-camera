@@ -15,7 +15,7 @@ SHOULD_UPLOAD_IMAGES_TO_S3 = False
 SAVED_PHOTOS_PATH = "./photos/"
 SHUTTER_SOUND_PATH = "./assets/camera-shutter-sound.mp3"
 SHUTTER_SOUND = AudioSegment.from_mp3(SHUTTER_SOUND_PATH)
-SHAPE_PREDICTOR_MODEL_PATH = "./shape_predictor_68_face_landmarks.dat"
+SHAPE_PREDICTOR_MODEL_PATH = "./model/shape_predictor_68_face_landmarks.dat"
 
 EYE_AR_THRESH = 0.18           # maximum EAR value for closed eyes
 ATTACK_FRAMES_TOTAL = 3        # num total closed frames needed to take photo
