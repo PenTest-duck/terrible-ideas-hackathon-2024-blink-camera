@@ -1,4 +1,7 @@
 import cv2
+from datetime import datetime
+
+SAVED_PHOTOS_PATH="./photos/"
 
 # Load Haar cascade classifiers
 # Cascade classifiers are a set of simple detectors which individually check for features that surmount to detect larger, more abstract features
@@ -9,7 +12,7 @@ faceCascade = cv2.CascadeClassifier(faceCascadePath)
 eyesCascade = cv2.CascadeClassifier(eyesCascadePath)
 
 # Start capturing video from laptop camera (0)
-print("Start video capture from camera...")
+print("Starting video capture from camera...")
 cam = cv2.VideoCapture(0) 
 
 while True:
@@ -30,6 +33,7 @@ while True:
     # flags = cv2.CASCADE_SCALE_IMAGE
   )
 
+  rawImage = image.copy()
   facesCount = 0
   eyesCount = 0
   for (x, y, w, h) in faces:
@@ -49,18 +53,26 @@ while True:
     for (ex, ey, ew, eh) in eyes:
       eyesCount += 1
       cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
-  
-  if facesCount > 0 and eyesCount == 0:
-    print("Can take photo!")
 
   # Display the parsed image on a window
   cv2.imshow("Camera output", image)
 
-  # Exit loop after 1 second delay if 'q' is pressed
+  # Photo can be taken when there are non-zero faces and zero eyes
+  canTakePhoto = facesCount > 0 and eyesCount == 0
+  if cv2.waitKey(1) & 0xFF == ord('p'):
+    if canTakePhoto:
+      print("Taking photo...")
+      timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+      photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
+      cv2.imwrite(photoPath, rawImage)
+    else:
+      print("Not taking photo because eyes are open.")
+
+  # Exit loop if 'q' is pressed
   if cv2.waitKey(1) & 0xFF == ord('q'):
     break
 
 # Gracefully shut down the video output window and the camera
-print("Shutting down the camera...")
+print("Shutting down the camera.")
 cv2.destroyAllWindows()
 cam.release()
