@@ -7,7 +7,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { grey } from '@mui/material/colors';
 import Carousel from 'react-material-ui-carousel';
 import ImageGallery from './components/gallery';
-// import bigPhoto from './components/bigPhoto';
+import BigPhoto from './components/bigPhoto';
 
 function App() {
   const theme = createTheme({
@@ -30,6 +30,7 @@ function App() {
           <Typography variant="h4" gutterBottom align="center" color="primary">Check out the photos taken</Typography>
         </Box>
         <Carousel autoPlay={true}></Carousel>
+        <BigPhoto />
         <ImageGallery />
       </Box>
     </ThemeProvider>
