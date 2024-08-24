@@ -4,9 +4,11 @@ from time import time
 from pydub import AudioSegment
 from pydub.playback import play
 import threading
-
 from s3 import uploadToS3
-SHOULD_UPLOAD_IMAGES_TO_S3 = False
+
+# When enabling this, don't forget to supply the credentials 
+# AWS_PROFILE="Terrible Hackathon" python3 main.py
+SHOULD_UPLOAD_IMAGES_TO_S3 = True
 
 SAVED_PHOTOS_PATH = "./photos/"
 SHUTTER_SOUND_PATH = "./assets/camera-shutter-sound.mp3"
@@ -131,6 +133,7 @@ def main():
 
             if SHOULD_UPLOAD_IMAGES_TO_S3:
                 # Upload produced images to S3
+                print("Uploading image to S3 ... ", end="")
                 thread = threading.Thread(target = uploadToS3, args = [rawImage])
                 thread.start() # Use multithreading to not block the video stream
             else:
