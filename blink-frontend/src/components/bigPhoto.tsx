@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import ModalImage from "react-modal-image"
+import { S3_BUCKET_NAME, S3_REGION, s3Client } from "../clients/s3-client";
+import { ListObjectsV2Command, ListObjectsV2CommandOutput } from "@aws-sdk/client-s3";
 
 const styles = {
     container: {
@@ -11,25 +13,38 @@ const styles = {
     }
   };
 
-function BigPhoto(){
-    const images = require.context('../../public/photo/', false, /\.(png|jpg)$/);
-    const firstImage = images.keys().map(image => images(image));
-    const numPic = firstImage.length;
+const BigPhoto = () => {
+    const [imageObjs, setImageObjs] = useState<Required<ListObjectsV2CommandOutput>["Contents"]>([]);
+
+    const listImagesInS3 = () => {
+        const command = new ListObjectsV2Command({
+            Bucket: S3_BUCKET_NAME,
+            MaxKeys: 100,
+        });
+
+        s3Client.send(command).then(({Contents}) => setImageObjs(Contents ?? []));
+    };
+    
+    useEffect(() => {
+        listImagesInS3()
+    }, []);
+
+    const numPic = imageObjs.length;
     const [currentIndex, setCurrentIndex] = useState(0);
 
-    useEffect(()=>{
+    useEffect(() => {
         const Id = setInterval(()=>{
-            setCurrentIndex(currentIndex== numPic ? 0 : currentIndex+ 1);
+            setCurrentIndex(currentIndex === numPic ? 0 : currentIndex + 1);
         }, 2000);
 
-        return ()=> clearInterval(Id);
-    }, [currentIndex]);
+        return () => clearInterval(Id);
+    }, [currentIndex, numPic]);
 
     return (
         <div style={styles.container}>
             <ModalImage
-                small={firstImage[currentIndex]}
-                large={firstImage[currentIndex]}
+                small={`https://${S3_BUCKET_NAME}.s3.${S3_REGION}.amazonaws.com/${imageObjs[currentIndex]?.Key}`}
+                large={`https://${S3_BUCKET_NAME}.s3.${S3_REGION}.amazonaws.com/${imageObjs[currentIndex]?.Key}`}
             />
         </div>
     );

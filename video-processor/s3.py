@@ -7,8 +7,6 @@ s3_resource = boto3.resource('s3')
 
 # Uploads an image to S3
 def uploadToS3(image):
-  print("Uploading image to S3 ... ", end="")
-  
   timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
   key = timestamp + ".png"
 
@@ -20,4 +18,4 @@ def uploadToS3(image):
     Body = image_string,
   )
 
-  print("Done!")
+  print("Upload Complete!")
