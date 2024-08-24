@@ -60,7 +60,7 @@ while True:
         # Draw rectangles around the eyes
         for (ex, ey, ew, eh) in eyes:
             eyesCount += 1
-        cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
+            cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
 
     # Display the parsed image on a window
     cv2.imshow("Camera output", image)
