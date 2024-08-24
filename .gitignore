@@ -1,6 +1,7 @@
 video-processor/bin
 video-processor/include
 video-processor/lib
+video-processor/photos
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
