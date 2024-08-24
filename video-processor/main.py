@@ -1,8 +1,12 @@
 import cv2
 from datetime import datetime
 from time import time
+from pydub import AudioSegment
+from pydub.playback import play
 
 SAVED_PHOTOS_PATH = "./photos/"
+SHUTTER_SOUND_PATH = "./assets/camera-shutter-sound.mp3"
+SHUTTER_SOUND = AudioSegment.from_mp3(SHUTTER_SOUND_PATH)
 
 ATTACK_FRAMES_TOTAL = 1        # num total closed frames needed to take photo
 ATTACK_FRAMES_CONSECUTIVE = 1  # num consecutive closed frames needed
@@ -74,7 +78,10 @@ while True:
         roi_color = image[y:y+h, x:x+w]
 
         # Detect the eyes within the face
-        eyes = eyesCascade.detectMultiScale(roi_gray)
+        eyes = eyesCascade.detectMultiScale(
+            roi_gray,
+            minNeighbors=10,
+        )
 
         # Draw rectangles around the eyes
         for (ex, ey, ew, eh) in eyes:
@@ -113,7 +120,9 @@ while True:
         consecutive_closed = 0
         total_closed = 0
 
+        play(SHUTTER_SOUND)
         print("Taking photo...")
+
         timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
         photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
         cv2.imwrite(photoPath, rawImage)
