@@ -1,9 +1,12 @@
 from cv2 import FONT_HERSHEY_SIMPLEX
 from pydub import AudioSegment
 
+# This flag allows uploading images to a public S3 bucket
 # When enabling this, don't forget to supply the credentials 
 # AWS_PROFILE="Terrible Hackathon" python3 main.py
 SHOULD_UPLOAD_IMAGES_TO_S3 = False
+
+# This flag allows triggering the flash through the Arduino
 SHOULD_USE_ARDUINO_FLASH = False
 
 SAVED_PHOTOS_PATH = "./photos/"
@@ -19,7 +22,7 @@ DELAY_TIME = 3                 # wait 3s before next photo
 DELTA_IMMEDIATE = 0.1          # if EAR decreases by > this much in some time
                                # period then a photo is taken
 
-MAX_FLASH_DELAY = 3
+MAX_FLASH_DELAY = 3 # seconds
 
 TEXT_POSITION = (300, 70)
 TEXT_FONT = FONT_HERSHEY_SIMPLEX
