@@ -1,7 +1,11 @@
 import cv2
 from datetime import datetime
 
-SAVED_PHOTOS_PATH="./photos/"
+SAVED_PHOTOS_PATH = "./photos/"
+
+ATTACK_FRAMES_TOTAL = 5        # num total closed frames needed to take photo
+ATTACK_FRAMES_CONSECUTIVE = 3  # num consecutive closed frames needed
+RELEASE_FRAMES = 5             # num consecutive open frames needed to reset
 
 # Load Haar cascade classifiers
 # Cascade classifiers are a set of simple detectors which individually check for features that surmount to detect larger, more abstract features
@@ -13,13 +17,17 @@ eyesCascade = cv2.CascadeClassifier(eyesCascadePath)
 
 # Start capturing video from laptop camera (0)
 print("Starting video capture from camera...")
-cam = cv2.VideoCapture(0) 
+cam = cv2.VideoCapture(0)
+
+total_closed = 0
+consecutive_closed = 0
+consecutive_open = 0
 
 while True:
-  # Read a single frame of image from the camera
+  # Try to read a single frame of image from the camera
   ret, image = cam.read()
   if not ret:
-    break
+    continue  # wait for next frame
 
   # We convert the image to greyscale for easier detection
   frame = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -58,15 +66,30 @@ while True:
   cv2.imshow("Camera output", image)
 
   # Photo can be taken when there are non-zero faces and zero eyes
-  canTakePhoto = facesCount > 0 and eyesCount == 0
-  if cv2.waitKey(1) & 0xFF == ord('p'):
-    if canTakePhoto:
+  eyesClosed = facesCount > 0 and eyesCount == 0
+
+  if eyesClosed:
+        total_closed += 1
+        consecutive_closed += 1
+        consecutive_open = 0
+  else:
+      consecutive_closed = 0
+      consecutive_open += 1
+
+  if consecutive_open > RELEASE_FRAMES:
+      total_closed = 0
+
+  should_capture = (total_closed > ATTACK_FRAMES_TOTAL
+      and consecutive_closed > ATTACK_FRAMES_CONSECUTIVE)
+  
+  if should_capture:
+      consecutive_closed = 0
+      total_closed = 0
+
       print("Taking photo...")
       timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
       photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
       cv2.imwrite(photoPath, rawImage)
-    else:
-      print("Not taking photo because eyes are open.")
 
   # Exit loop if 'q' is pressed
   if cv2.waitKey(1) & 0xFF == ord('q'):
