@@ -9,6 +9,8 @@ import dlib
 import datetime
 from s3 import uploadToS3
 import threading
+import random
+from arduino import flash
 
 # When enabling this, don't forget to supply the credentials 
 # AWS_PROFILE="Terrible Hackathon" python3 main.py
@@ -26,6 +28,8 @@ RELEASE_FRAMES = 5             # num consecutive open frames needed to reset
 DELAY_TIME = 3                 # wait 3s before next photo
 DELTA_IMMEDIATE = 0.1          # if EAR decreases by > this much in some time
                                # period then a photo is taken
+
+MAX_FLASH_DELAY = 3
 
 TEXT_POSITION = (300, 70)
 TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
@@ -76,7 +80,14 @@ def main():
     last_photo_time = datetime.datetime.now()
     avgEARHistory = []
     enabled = False
+    flash_time = None
     while True:
+        #print(datetime.datetime.now())
+        if flash_time is not None and datetime.datetime.now() > flash_time:
+            print("flashing")
+            flash(100)
+            flash_time = None
+
         #print(f"tc: {total_closed}, cc: {consecutive_closed}, co: {consecutive_open}")
         # grab the frame from the video stream, resize
         # it, and convert it to grayscale
@@ -216,6 +227,9 @@ def main():
         key = cv2.waitKey(1) & 0xFF
         if key == ord(" "):
             enabled = not enabled  # toggle
+        if key == ord("f"):
+            flash_time = datetime.datetime.now() + datetime.timedelta(seconds=random.randint(0, MAX_FLASH_DELAY))
+            print(f"flashing at {flash_time}")
         if key == ord("q"):
             break
 
