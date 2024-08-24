@@ -1,0 +1,23 @@
+import cv2
+import boto3
+from datetime import datetime
+
+BUCKET_NAME = "terrible-idea-hackathon-2024-blink-camera"
+s3_resource = boto3.resource('s3')
+
+# Uploads an image to S3
+def uploadToS3(image):
+  print("Uploading image to S3 ... ", end="")
+  
+  timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+  key = timestamp + ".png"
+
+  image_string = cv2.imencode('.png', image)[1].tostring()
+
+  bucket = s3_resource.Bucket(BUCKET_NAME)
+  bucket.put_object(
+    Key = key,
+    Body = image_string,
+  )
+
+  print("Done!")
