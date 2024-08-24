@@ -7,9 +7,11 @@ from imutils import face_utils
 import imutils
 import dlib
 import datetime
+from s3 import uploadToS3
 import threading
 
-# from s3 import uploadToS3
+# When enabling this, don't forget to supply the credentials 
+# AWS_PROFILE="Terrible Hackathon" python3 main.py
 SHOULD_UPLOAD_IMAGES_TO_S3 = False
 
 SAVED_PHOTOS_PATH = "./photos/"
@@ -195,6 +197,12 @@ def main():
             play(SHUTTER_SOUND)
             print("Taking photo...")
 
+            if SHOULD_UPLOAD_IMAGES_TO_S3:
+                # Upload produced images to S3
+                print("Uploading image to S3 ... ", end="")
+                thread = threading.Thread(target = uploadToS3, args = [frame_raw])
+                thread.start() # Use multithreading to not block the video stream
+            
             # Write photo to local storage
             timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
             photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
