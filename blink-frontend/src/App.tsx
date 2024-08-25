@@ -49,7 +49,19 @@ function App() {
         }}
       >
         <Typography variant="h1" fontWeight="bold" gutterBottom align="center" color="primary">Terrible Ideas Hackathon</Typography>
-        <Typography variant="h4" gutterBottom align="center" color="primary">Check out the photos taken!</Typography>
+        <Typography variant="h4" gutterBottom align="center" color="primary">
+          <div style={{ fontSize: '28px', color: 'white', fontWeight: 'bold'  }}>
+                Message from 👀
+              </div>
+
+              <div style={{fontSize:'20px', fontWeight:'bold'}}>
+              "my health is IMPORTANT!!!   Click
+
+              <a style={{ textDecoration: 'none', color:'white' }} rel="noopener noreferrer" target="_blank" href="https://www.health.gov.au/topics/eye-health-and-vision"> 
+                <u style={{textDecoration:'none'}}> 🏥</u> for more info"
+              </a>
+              </div>
+        </Typography>
 
         <BigPhoto images={images} />
 
