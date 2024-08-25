@@ -21,7 +21,7 @@ const ImageGallery = ({ images }: ImageGalleryParams) => {
         <Box width="100%"  height="100%" style={{display: 'flex',  justifyContent:'center', alignItems:'center'}}>
             <ImageList sx={{ width:"100%", height:"100%", padding:"5%" }} cols={3} gap={20}>
             {images.map((image) => (
-                <ImageListItem>
+                <ImageListItem key={image.split("/").at(-1)}>
                     <div style={styles.container}>
                     <ModalImage
                         small={image}

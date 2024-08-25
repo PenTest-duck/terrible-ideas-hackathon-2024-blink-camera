@@ -7,8 +7,7 @@ import { grey } from '@mui/material/colors';
 import Carousel from 'react-material-ui-carousel';
 import ImageGallery from './components/gallery';
 import BigPhoto from './components/bigPhoto';
-import { ListObjectsV2Command } from '@aws-sdk/client-s3';
-import { S3_BUCKET_NAME, S3_MAX_KEYS, S3_REGION, s3Client } from './clients/s3-client';
+import ImagesClient from './clients/images-client';
 
 function App() {
   const theme = createTheme({
@@ -23,24 +22,11 @@ function App() {
   });
 
   const [images, setImages] = useState<string[]>([]);
-
-  const getImagesFromS3 = () => {
-    const command = new ListObjectsV2Command({
-        Bucket: S3_BUCKET_NAME,
-        MaxKeys: S3_MAX_KEYS,
-    });
-
-    s3Client.send(command).then(({Contents}) => {
-      const tmpImages: string[] = [];
-      Contents?.forEach((obj) => {
-        tmpImages.push(`https://${S3_BUCKET_NAME}.s3.${S3_REGION}.amazonaws.com/${obj.Key}`);
-      });
-      setImages(tmpImages);
-    })
-  };
   
   useEffect(() => {
-    getImagesFromS3()
+    const imagesClient = new ImagesClient();
+    imagesClient.listImages().then((urls) => setImages(urls));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

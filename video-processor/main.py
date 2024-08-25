@@ -1,42 +1,20 @@
 import cv2
 from datetime import datetime
-from pydub import AudioSegment
 from pydub.playback import play
 from scipy.spatial import distance as dist
 from imutils import face_utils
 import imutils
 import dlib
-import datetime
-#from s3 import uploadToS3
+from datetime import datetime, timedelta
 import threading
 import random
 import arduino
+from time import sleep
 
-# When enabling this, don't forget to supply the credentials 
-# AWS_PROFILE="Terrible Hackathon" python3 main.py
-SHOULD_UPLOAD_IMAGES_TO_S3 = False
-
-SAVED_PHOTOS_PATH = "./photos/"
-SHUTTER_SOUND_PATH = "./assets/camera-shutter-sound.mp3"
-SHUTTER_SOUND = AudioSegment.from_mp3(SHUTTER_SOUND_PATH)
-SHAPE_PREDICTOR_MODEL_PATH = "./model/shape_predictor_68_face_landmarks.dat"
-
-EYE_AR_THRESH = 0.18           # maximum EAR value for closed eyes
-ATTACK_FRAMES_TOTAL = 3        # num total closed frames needed to take photo
-ATTACK_FRAMES_CONSECUTIVE = 2  # num consecutive closed frames needed
-RELEASE_FRAMES = 5             # num consecutive open frames needed to reset
-DELAY_TIME = 3                 # wait 3s before next photo
-DELTA_IMMEDIATE = 0.1          # if EAR decreases by > this much in some time
-                               # period then a photo is taken
-
-MAX_FLASH_DELAY = 3
-
-TEXT_POSITION = (300, 70)
-TEXT_FONT = cv2.FONT_HERSHEY_SIMPLEX
-TEXT_FONT_SCALE = 2.0
-TEXT_COLOR_RED = (0, 0, 255)
-TEXT_COLOR_GREEN = (0, 255, 0)
-TEXT_THICKNESS = 2
+# Imports from local files
+#from s3 import uploadToS3
+import arduino
+from constants import *
 
 arduino.off()
 
@@ -75,14 +53,16 @@ vs.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
 # loop over frames from the video stream
 def main():
-    time_prev = datetime.datetime.now()
+    time_prev = datetime.now()
     total_closed = 0
     consecutive_closed = 0
     consecutive_open = 0
-    last_photo_time = datetime.datetime.now()
+    last_photo = None
+    last_photo_time = datetime.now()
     avgEARHistory = []
     enabled = False
     flash_time = None
+
     while True:
         ret, frame_raw = vs.read()
         if not ret:
@@ -96,8 +76,30 @@ def main():
             arduino.flash()
             flash_time = None
 
-        #print(f"tc: {total_closed}, cc: {consecutive_closed}, co: {consecutive_open}")
-        # grab the frame from the video stream, resize
+        if last_photo is not None: 
+            cv2.putText(last_photo, f"Press 1 to post online, 2 to try again", (10, 70), TEXT_FONT, TEXT_FONT_SCALE, TEXT_COLOR_BLUE, 5)
+            cv2.imshow(DISPLAY_WINDOW_NAME, last_photo)
+
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("1"):
+                if SHOULD_UPLOAD_IMAGES_TO_S3:
+                    # Upload produced images to S3
+                    print("Uploading image to S3 ... ", end="")
+                    thread = threading.Thread(target = uploadToS3, args = [frame_raw])
+                    thread.start() # Use multithreading to not block the video stream
+                
+                # Write photo to local storage
+                timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+                photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
+                print(photoPath)
+                cv2.imwrite(photoPath, frame_raw)
+                last_photo = None
+            if key == ord("2"):
+                last_photo = None
+
+            continue
+
+        # Grab the frame from the video stream, resize
         # it, and convert it to grayscale
         # channels)
 
@@ -167,18 +169,18 @@ def main():
 
         # draw the computed info on the frame
         cv2.putText(frame_large, f"Num Faces: {len(rects)}", (10, 30),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         cv2.putText(frame_large, f"Num Closed Eyes: {closed_eyes_count}", (10, 80),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         cv2.putText(frame_large, f"Can Capture: {canTakePhoto}", (10, 130),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         cv2.putText(frame_large, f"EARs: L {leftEAR:.2f} R {rightEAR:.2f}", (10, 180),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         
-        mspf = (datetime.datetime.now() - time_prev) / datetime.timedelta(milliseconds=1)
-        time_prev = datetime.datetime.now()
+        mspf = (datetime.now() - time_prev) / timedelta(milliseconds=1)
+        time_prev = datetime.now()
         cv2.putText(frame_large, f"FPS: {(1000 / mspf):.0f}", (10, 230),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         
         if enabled:
             cv2.putText(frame_large, "Taking Photo. Get Ready!",
@@ -202,37 +204,24 @@ def main():
             if avgAvg - min(avgEARHistory[-8:]) > DELTA_IMMEDIATE and canTakePhoto:
                 should_capture_immediate = True
 
-        should_capture = (((total_closed >= ATTACK_FRAMES_TOTAL
-            and consecutive_closed >= ATTACK_FRAMES_CONSECUTIVE)
+        should_capture = (
+            ((total_closed >= ATTACK_FRAMES_TOTAL and consecutive_closed >= ATTACK_FRAMES_CONSECUTIVE)
             or should_capture_immediate)
-            and (datetime.datetime.now() - last_photo_time).total_seconds() > DELAY_TIME)
+            and (datetime.now() - last_photo_time).total_seconds() > DELAY_TIME)
 
         if enabled and should_capture:
-            last_photo_time = datetime.datetime.now()
+            last_photo_time = datetime.now()
             consecutive_closed = 0
             total_closed = 0
 
-            # show the frame
-            cv2.imshow("Camera Preview", frame_large)
-
             # Make shutter noise
-            play(SHUTTER_SOUND)
-            print("Taking photo...")
+            thread = threading.Thread(target = play, args = [SHUTTER_SOUND])
+            thread.start()
 
-            if SHOULD_UPLOAD_IMAGES_TO_S3:
-                # Upload produced images to S3
-                print("Uploading image to S3 ... ", end="")
-                thread = threading.Thread(target = uploadToS3, args = [frame_raw])
-                thread.start() # Use multithreading to not block the video stream
-            
-            # Write photo to local storage
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-            photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
-            print(photoPath)
-            cv2.imwrite(photoPath, frame_raw)
+            last_photo = frame_raw
     
         # show the frame
-        cv2.imshow("Camera Preview", frame_large)
+        cv2.imshow(DISPLAY_WINDOW_NAME, frame_large)
 
         # if the `q` key was pressed, break from the loop
         key = cv2.waitKey(1) & 0xFF
@@ -242,7 +231,7 @@ def main():
             #    arduino.slide_on()
 
         if key == ord("f"):
-            flash_time = datetime.datetime.now() + datetime.timedelta(seconds=random.randint(0, MAX_FLASH_DELAY))
+            flash_time = datetime.now() + timedelta(seconds=random.randint(0, MAX_FLASH_DELAY))
             print(f"flashing at {flash_time}")
         if key == ord("q"):
             break

@@ -1,23 +1,29 @@
-import time
+# import time
 import serial
+from constants import SHOULD_USE_ARDUINO
 arduino = serial.Serial(port='COM5', baudrate=115200, timeout=.1)
 
 arduino.write(bytes("\n", 'ascii'))  # first byte is ignored for some reason
 
 def flash():
-    arduino.write(bytes("F\n", 'ascii'))
+    if SHOULD_USE_ARDUINO:
+        arduino.write(bytes("F\n", 'ascii'))
 
 def off():
-    arduino.write(bytes("O\n", 'ascii'))
+    if SHOULD_USE_ARDUINO:
+        arduino.write(bytes("O\n", 'ascii'))
 
 def clear():
-    arduino.write(bytes("C\n", 'ascii'))
+    if SHOULD_USE_ARDUINO:
+        arduino.write(bytes("C\n", 'ascii'))
 
 def slide_on():
-    arduino.write(bytes("S\n", 'ascii'))
+    if SHOULD_USE_ARDUINO:
+        arduino.write(bytes("S\n", 'ascii'))
 
 def set_region(start, end, colour):
-    arduino.write(bytes(f"R {start} {end} {colour}\n", 'ascii'))
+    if SHOULD_USE_ARDUINO:
+        arduino.write(bytes(f"R {start} {end} {colour}\n", 'ascii'))
 
 if __name__ == '__main__':
     while True:
