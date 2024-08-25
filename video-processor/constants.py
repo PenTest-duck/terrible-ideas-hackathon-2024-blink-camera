@@ -14,6 +14,7 @@ SHUTTER_SOUND_PATH = "./assets/camera-shutter-sound.mp3"
 SHUTTER_SOUND = AudioSegment.from_mp3(SHUTTER_SOUND_PATH)
 SHAPE_PREDICTOR_MODEL_PATH = "./model/shape_predictor_68_face_landmarks.dat"
 
+SF = 2
 EYE_AR_THRESH = 0.18           # maximum EAR value for closed eyes
 ATTACK_FRAMES_TOTAL = 3        # num total closed frames needed to take photo
 ATTACK_FRAMES_CONSECUTIVE = 2  # num consecutive closed frames needed
@@ -23,10 +24,13 @@ DELTA_IMMEDIATE = 0.1          # if EAR decreases by > this much in some time
                                # period then a photo is taken
 
 MAX_FLASH_DELAY = 3 # seconds
+PHOTO_REVIEW_SECONDS = 3
 
+DISPLAY_WINDOW_NAME = "Camera Preview"
 TEXT_POSITION = (300, 70)
 TEXT_FONT = FONT_HERSHEY_SIMPLEX
 TEXT_FONT_SCALE = 2.0
 TEXT_COLOR_RED = (0, 0, 255)
 TEXT_COLOR_GREEN = (0, 255, 0)
+TEXT_COLOR_BLUE = (255, 0, 0)
 TEXT_THICKNESS = 2
