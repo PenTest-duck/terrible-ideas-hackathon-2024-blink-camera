@@ -4,7 +4,6 @@ import { Box, Stack, Typography } from '@mui/material';
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { grey } from '@mui/material/colors';
-import Carousel from 'react-material-ui-carousel';
 import ImageGallery from './components/gallery';
 import BigPhoto from './components/bigPhoto';
 import ImagesClient from './clients/images-client';
@@ -41,6 +40,7 @@ function App() {
         flexDirection="column"
         paddingTop="3%"
         paddingBottom="1%"
+        textAlign="center"
         sx={{
           backgroundImage:`url(${BgPhoto})`,
           backgroundRepeat: "no-repeat",
@@ -48,13 +48,14 @@ function App() {
           height: "100%",
         }}
       >
-        <Box width="100%" justifyContent="center" alignItems="center">
-          <Typography variant="h1" fontWeight="bold" gutterBottom align="center" color="primary">Terrible Ideas Hackathon</Typography>
-          <Typography variant="h4" gutterBottom align="center" color="primary">Check out the photos taken!</Typography>
-        </Box>
-        <Carousel autoPlay={true}></Carousel>
-        <BigPhoto images={images}/>
+        <Typography variant="h1" fontWeight="bold" gutterBottom align="center" color="primary">Terrible Ideas Hackathon</Typography>
+        <Typography variant="h4" gutterBottom align="center" color="primary">Check out the photos taken!</Typography>
+
+        <BigPhoto images={images} />
+
+        <Typography marginTop="3%" fontWeight="bold" color="primary">Click on each image to admire it in full screen.</Typography>
         <ImageGallery images={images} />
+
         <Stack flexDirection="row" paddingX="3%" justifyContent="space-between">
           <Typography color="secondary">Submission for the Terrible Ideas Hackathon 2024 @ UNSW.</Typography>
           <Typography color="secondary">Made with 👀 by Bianca Ren, Cameron McDonald, and Chris Yoo.</Typography>
