@@ -2,7 +2,7 @@
 **A camera that only takes photos when your eyes are closed!**
 
 Built by Bianca Ren, Cameron McDonald, and Chris Yoo.
-For the Terrible Ideas Hackathon 2024 @ UNSW.
+**Winner - Peak of Pointlessness award** in the Terrible Ideas Hackathon 2024 @ UNSW.
 
 ### Video Processor (Python & OpenCV)
 To detect when the subject's eyes are closed, we used a Python script to process a video feed from the laptop's camera and take photos when all eyes in the shot are closed.
