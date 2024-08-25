@@ -5,9 +5,10 @@ from scipy.spatial import distance as dist
 from imutils import face_utils
 import imutils
 import dlib
-import datetime
+from datetime import datetime, timedelta
 import threading
 import random
+from time import sleep
 
 # Imports from local files
 from s3 import uploadToS3
@@ -49,19 +50,44 @@ vs.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
 # loop over frames from the video stream
 def main():
-    time_prev = datetime.datetime.now()
+    time_prev = datetime.now()
     total_closed = 0
     consecutive_closed = 0
     consecutive_open = 0
-    last_photo_time = datetime.datetime.now()
+    last_photo = None
+    last_photo_time = datetime.now()
     avgEARHistory = []
     enabled = False
     flash_time = None
+
     while True:
-        if SHOULD_USE_ARDUINO_FLASH and flash_time is not None and datetime.datetime.now() > flash_time:
+        if SHOULD_USE_ARDUINO_FLASH and flash_time is not None and datetime.now() > flash_time:
             print("flashing")
             flash(100)
             flash_time = None
+
+        if last_photo is not None: 
+            cv2.putText(last_photo, f"Press 1 to post online, 2 to try again", (10, 70), TEXT_FONT, TEXT_FONT_SCALE, TEXT_COLOR_BLUE, 5)
+            cv2.imshow(DISPLAY_WINDOW_NAME, last_photo)
+
+            key = cv2.waitKey(1) & 0xFF
+            if key == ord("1"):
+                if SHOULD_UPLOAD_IMAGES_TO_S3:
+                    # Upload produced images to S3
+                    print("Uploading image to S3 ... ", end="")
+                    thread = threading.Thread(target = uploadToS3, args = [frame_raw])
+                    thread.start() # Use multithreading to not block the video stream
+                
+                # Write photo to local storage
+                timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
+                photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
+                print(photoPath)
+                cv2.imwrite(photoPath, frame_raw)
+                last_photo = None
+            if key == ord("2"):
+                last_photo = None
+
+            continue
 
         # Grab the frame from the video stream, resize
         # it, and convert it to grayscale
@@ -69,8 +95,7 @@ def main():
         ret, frame_raw = vs.read()
         if not ret:
             continue
-        SF = 2
-        #frame_large = imutils.resize(frame_raw, width=1440)
+
         frame_large = frame_raw.copy()
         frame = imutils.resize(frame_raw, width=640)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -130,18 +155,18 @@ def main():
 
         # draw the computed info on the frame
         cv2.putText(frame_large, f"Num Faces: {len(rects)}", (10, 30),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         cv2.putText(frame_large, f"Num Closed Eyes: {closed_eyes_count}", (10, 80),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         cv2.putText(frame_large, f"Can Capture: {canTakePhoto}", (10, 130),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         cv2.putText(frame_large, f"EARs: L {leftEAR:.2f} R {rightEAR:.2f}", (10, 180),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         
-        mspf = (datetime.datetime.now() - time_prev) / datetime.timedelta(milliseconds=1)
-        time_prev = datetime.datetime.now()
+        mspf = (datetime.now() - time_prev) / timedelta(milliseconds=1)
+        time_prev = datetime.now()
         cv2.putText(frame_large, f"FPS: {(1000 / mspf):.0f}", (10, 230),
-            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
+            TEXT_FONT, 0.7, (0, 0, 255), 2)
         
         if enabled:
             cv2.putText(frame_large, "Taking Photo. Get Ready!",
@@ -165,44 +190,31 @@ def main():
             if avgAvg - min(avgEARHistory[-8:]) > DELTA_IMMEDIATE and canTakePhoto:
                 should_capture_immediate = True
 
-        should_capture = (((total_closed >= ATTACK_FRAMES_TOTAL
-            and consecutive_closed >= ATTACK_FRAMES_CONSECUTIVE)
+        should_capture = (
+            ((total_closed >= ATTACK_FRAMES_TOTAL and consecutive_closed >= ATTACK_FRAMES_CONSECUTIVE)
             or should_capture_immediate)
-            and (datetime.datetime.now() - last_photo_time).total_seconds() > DELAY_TIME)
+            and (datetime.now() - last_photo_time).total_seconds() > DELAY_TIME)
 
         if enabled and should_capture:
-            last_photo_time = datetime.datetime.now()
+            last_photo_time = datetime.now()
             consecutive_closed = 0
             total_closed = 0
 
-            # show the frame
-            cv2.imshow("Camera Preview", frame_large)
-
             # Make shutter noise
-            play(SHUTTER_SOUND)
-            print("Taking photo...")
+            thread = threading.Thread(target = play, args = [SHUTTER_SOUND])
+            thread.start()
 
-            if SHOULD_UPLOAD_IMAGES_TO_S3:
-                # Upload produced images to S3
-                print("Uploading image to S3 ... ", end="")
-                thread = threading.Thread(target = uploadToS3, args = [frame_raw])
-                thread.start() # Use multithreading to not block the video stream
-            
-            # Write photo to local storage
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
-            photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
-            print(photoPath)
-            cv2.imwrite(photoPath, frame_raw)
+            last_photo = frame_raw
     
         # show the frame
-        cv2.imshow("Camera Preview", frame_large)
+        cv2.imshow(DISPLAY_WINDOW_NAME, frame_large)
 
         # if the `q` key was pressed, break from the loop
         key = cv2.waitKey(1) & 0xFF
         if key == ord(" "):
             enabled = not enabled  # toggle
         if key == ord("f"):
-            flash_time = datetime.datetime.now() + datetime.timedelta(seconds=random.randint(0, MAX_FLASH_DELAY))
+            flash_time = datetime.now() + timedelta(seconds=random.randint(0, MAX_FLASH_DELAY))
             print(f"flashing at {flash_time}")
         if key == ord("q"):
             break
