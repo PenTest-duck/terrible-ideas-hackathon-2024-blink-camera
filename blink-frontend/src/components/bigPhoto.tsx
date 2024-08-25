@@ -9,7 +9,7 @@ const BigPhoto = ({ images }: BigPhotoProps) => {
     const mappedImages = images.map((image) => ({ original: image }));
 
     return (
-        <ReactImageGallery items={mappedImages} />
+        <ReactImageGallery items={mappedImages} autoPlay={true} />
     )
 }
 
