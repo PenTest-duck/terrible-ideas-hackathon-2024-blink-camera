@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { BottomNavigation, Box, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { grey } from '@mui/material/colors';
@@ -19,6 +19,9 @@ function App() {
       primary: {
         main: grey[100],
       },
+      secondary: {
+        main: "#3f3838",
+      },
     }
   });
 
@@ -33,27 +36,29 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box>
-        <Box 
-          width="100%"
-          flexDirection="column"
-          paddingY="3%"
-          sx={{
-            backgroundImage:`url(${BgPhoto})`,
-            backgroundRepeat: "no-repeat",
-            backgroundSize: "cover",
-            height: "100%",
-          }}
-        >
-          <Box width="100%" justifyContent="center" alignItems="center">
-            <Typography variant="h1" fontWeight="bold" gutterBottom align="center" color="primary">Terrible Ideas Hackathon</Typography>
-            <Typography variant="h4" gutterBottom align="center" color="primary">Check out the photos taken!</Typography>
-          </Box>
-          <Carousel autoPlay={true}></Carousel>
-          <BigPhoto images={images}/>
-          <ImageGallery images={images} />
+      <Box 
+        width="100%"
+        flexDirection="column"
+        paddingTop="3%"
+        paddingBottom="1%"
+        sx={{
+          backgroundImage:`url(${BgPhoto})`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          height: "100%",
+        }}
+      >
+        <Box width="100%" justifyContent="center" alignItems="center">
+          <Typography variant="h1" fontWeight="bold" gutterBottom align="center" color="primary">Terrible Ideas Hackathon</Typography>
+          <Typography variant="h4" gutterBottom align="center" color="primary">Check out the photos taken!</Typography>
         </Box>
-        <footer></footer>
+        <Carousel autoPlay={true}></Carousel>
+        <BigPhoto images={images}/>
+        <ImageGallery images={images} />
+        <Stack flexDirection="row" paddingX="3%" justifyContent="space-between">
+          <Typography color="secondary">Submission for the Terrible Ideas Hackathon 2024 @ UNSW.</Typography>
+          <Typography color="secondary">Made with 👀 by Bianca Ren, Cameron McDonald, and Chris Yoo.</Typography>
+        </Stack>
       </Box>
     </ThemeProvider>
   );
