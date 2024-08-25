@@ -12,9 +12,6 @@ import BgPhoto from './assets/instagram-colour-background.png';
 function App() {
   const theme = createTheme({
     palette: {
-      // background: {
-      //   default: "black"
-      // },
       primary: {
         main: grey[100],
       },
@@ -49,18 +46,19 @@ function App() {
         }}
       >
         <Typography variant="h1" fontWeight="bold" gutterBottom align="center" color="primary">Terrible Ideas Hackathon</Typography>
+        <Typography variant="h3" color="primary" pb="1%">Capturing you in your "eye-catching" moment.</Typography>
         <Typography variant="h4" gutterBottom align="center" color="primary">
           <div style={{ fontSize: '28px', color: 'white', fontWeight: 'bold'  }}>
-                Message from 👀
-              </div>
+            Message from 👀
+          </div>
 
-              <div style={{fontSize:'20px', fontWeight:'bold'}}>
-              "my health is IMPORTANT!!!   Click
+          <div style={{fontSize:'20px', fontWeight:'bold'}}>
+          "my health is IMPORTANT!!!   Click
 
-              <a style={{ textDecoration: 'none', color:'white' }} rel="noopener noreferrer" target="_blank" href="https://www.health.gov.au/topics/eye-health-and-vision"> 
-                <u style={{textDecoration:'none'}}> 🏥</u> for more info"
-              </a>
-              </div>
+          <a style={{ textDecoration: 'none', color:'white' }} rel="noopener noreferrer" target="_blank" href="https://www.health.gov.au/topics/eye-health-and-vision"> 
+            <u style={{textDecoration:'none'}}> 🏥</u> for more info"
+          </a>
+          </div>
         </Typography>
 
         <BigPhoto images={images} />
