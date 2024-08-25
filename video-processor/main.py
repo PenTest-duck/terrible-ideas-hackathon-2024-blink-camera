@@ -12,11 +12,11 @@ import arduino
 from time import sleep
 
 # Imports from local files
-#from s3 import uploadToS3
+from s3 import uploadToS3
 import arduino
 from constants import *
 
-arduino.off()
+# arduino.off()
 
 def eye_aspect_ratio(eye):
     # compute the euclidean distances between the two sets of
@@ -67,13 +67,10 @@ def main():
         ret, frame_raw = vs.read()
         if not ret:
             continue
-        
-        arduino.clear()
 
-        #print(datetime.datetime.now())
-        if flash_time is not None and datetime.datetime.now() > flash_time:
+        if flash_time is not None and datetime.now() > flash_time:
             print("flashing")
-            arduino.flash()
+            arduino.flash(100)
             flash_time = None
 
         if last_photo is not None: 
@@ -122,7 +119,7 @@ def main():
             left = (rect.left() * 100) // 1280
             right = (rect.right() * 100) // 1280
 
-            arduino.set_region(left, right, 0x0000ff)
+            # arduino.set_region(left, right, 0x0000ff)
 
             rect_large = dlib.rectangle(rect.left() * SF, rect.top() * SF, rect.right() * SF, rect.bottom() * SF)
             cv2.rectangle(frame_large, (rect.left() * SF, rect.top() * SF), (rect.right() * SF, rect.bottom() * SF), (255, 0, 0))
@@ -222,6 +219,8 @@ def main():
     
         # show the frame
         cv2.imshow(DISPLAY_WINDOW_NAME, frame_large)
+
+        # arduino.show()
 
         # if the `q` key was pressed, break from the loop
         key = cv2.waitKey(1) & 0xFF
