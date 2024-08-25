@@ -8,12 +8,15 @@ import dlib
 from datetime import datetime, timedelta
 import threading
 import random
+import arduino
 from time import sleep
 
 # Imports from local files
 from s3 import uploadToS3
-from arduino import flash
+import arduino
 from constants import *
+
+# arduino.off()
 
 def eye_aspect_ratio(eye):
     # compute the euclidean distances between the two sets of
@@ -61,9 +64,13 @@ def main():
     flash_time = None
 
     while True:
-        if SHOULD_USE_ARDUINO_FLASH and flash_time is not None and datetime.now() > flash_time:
+        ret, frame_raw = vs.read()
+        if not ret:
+            continue
+
+        if flash_time is not None and datetime.now() > flash_time:
             print("flashing")
-            flash(100)
+            arduino.flash(100)
             flash_time = None
 
         if last_photo is not None: 
@@ -91,11 +98,10 @@ def main():
 
         # Grab the frame from the video stream, resize
         # it, and convert it to grayscale
-        # channels
-        ret, frame_raw = vs.read()
-        if not ret:
-            continue
+        # channels)
 
+        SF = 2
+        #frame_large = imutils.resize(frame_raw, width=1440)
         frame_large = frame_raw.copy()
         frame = imutils.resize(frame_raw, width=640)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -110,6 +116,11 @@ def main():
         rightEAR = 0
         EARs = []
         for rect in rects:
+            left = (rect.left() * 100) // 1280
+            right = (rect.right() * 100) // 1280
+
+            # arduino.set_region(left, right, 0x0000ff)
+
             rect_large = dlib.rectangle(rect.left() * SF, rect.top() * SF, rect.right() * SF, rect.bottom() * SF)
             cv2.rectangle(frame_large, (rect.left() * SF, rect.top() * SF), (rect.right() * SF, rect.bottom() * SF), (255, 0, 0))
 
@@ -209,10 +220,15 @@ def main():
         # show the frame
         cv2.imshow(DISPLAY_WINDOW_NAME, frame_large)
 
+        # arduino.show()
+
         # if the `q` key was pressed, break from the loop
         key = cv2.waitKey(1) & 0xFF
         if key == ord(" "):
             enabled = not enabled  # toggle
+            #if enabled:
+            #    arduino.slide_on()
+
         if key == ord("f"):
             flash_time = datetime.now() + timedelta(seconds=random.randint(0, MAX_FLASH_DELAY))
             print(f"flashing at {flash_time}")
