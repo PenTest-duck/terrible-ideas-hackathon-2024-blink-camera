@@ -48,8 +48,8 @@ predictor = dlib.shape_predictor(SHAPE_PREDICTOR_MODEL_PATH)
 # start the video capture
 print("[INFO] starting video capture...")
 vs = cv2.VideoCapture(0)
-vs.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-vs.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+vs.set(cv2.CAP_PROP_FRAME_WIDTH, 1920)
+vs.set(cv2.CAP_PROP_FRAME_HEIGHT, 1080)
 
 # loop over frames from the video stream
 def main():
@@ -70,7 +70,7 @@ def main():
 
         if flash_time is not None and datetime.now() > flash_time:
             print("flashing")
-            arduino.flash(100)
+            arduino.flash(FLASH_DURATION)
             flash_time = None
 
         if last_photo is not None: 
@@ -100,7 +100,6 @@ def main():
         # it, and convert it to grayscale
         # channels)
 
-        SF = 2
         #frame_large = imutils.resize(frame_raw, width=1440)
         frame_large = frame_raw.copy()
         frame = imutils.resize(frame_raw, width=640)
@@ -230,7 +229,7 @@ def main():
             #    arduino.slide_on()
 
         if key == ord("f"):
-            flash_time = datetime.now() + timedelta(seconds=random.randint(0, MAX_FLASH_DELAY))
+            flash_time = datetime.now() + timedelta(seconds=random.randint(MIN_FLASH_DELAY, MAX_FLASH_DELAY))
             print(f"flashing at {flash_time}")
         if key == ord("q"):
             break

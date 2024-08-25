@@ -14,17 +14,19 @@ SHUTTER_SOUND_PATH = "./assets/camera-shutter-sound.mp3"
 SHUTTER_SOUND = AudioSegment.from_mp3(SHUTTER_SOUND_PATH)
 SHAPE_PREDICTOR_MODEL_PATH = "./model/shape_predictor_68_face_landmarks.dat"
 
-SF = 2
-EYE_AR_THRESH = 0.19           # maximum EAR value for closed eyes
-ATTACK_FRAMES_TOTAL = 3        # num total closed frames needed to take photo
-ATTACK_FRAMES_CONSECUTIVE = 2  # num consecutive closed frames needed
+SF = 3
+EYE_AR_THRESH = 0.20           # maximum EAR value for closed eyes
+ATTACK_FRAMES_TOTAL = 5        # num total closed frames needed to take photo
+ATTACK_FRAMES_CONSECUTIVE = 1  # num consecutive closed frames needed
 RELEASE_FRAMES = 5             # num consecutive open frames needed to reset
 DELAY_TIME = 3                 # wait 3s before next photo
 DELTA_IMMEDIATE = 0.1          # if EAR decreases by > this much in some time
                                # period then a photo is taken
 
+MIN_FLASH_DELAY = 1 # s
 MAX_FLASH_DELAY = 3 # seconds
 PHOTO_REVIEW_SECONDS = 3
+FLASH_DURATION = 255 # ms
 
 DISPLAY_WINDOW_NAME = "Camera Preview"
 TEXT_POSITION = (300, 70)
