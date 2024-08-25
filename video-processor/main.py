@@ -7,10 +7,10 @@ from imutils import face_utils
 import imutils
 import dlib
 import datetime
-from s3 import uploadToS3
+#from s3 import uploadToS3
 import threading
 import random
-from arduino import flash
+import arduino
 
 # When enabling this, don't forget to supply the credentials 
 # AWS_PROFILE="Terrible Hackathon" python3 main.py
@@ -37,6 +37,8 @@ TEXT_FONT_SCALE = 2.0
 TEXT_COLOR_RED = (0, 0, 255)
 TEXT_COLOR_GREEN = (0, 255, 0)
 TEXT_THICKNESS = 2
+
+arduino.off()
 
 def eye_aspect_ratio(eye):
     # compute the euclidean distances between the two sets of
@@ -82,19 +84,23 @@ def main():
     enabled = False
     flash_time = None
     while True:
+        ret, frame_raw = vs.read()
+        if not ret:
+            continue
+        
+        arduino.clear()
+
         #print(datetime.datetime.now())
         if flash_time is not None and datetime.datetime.now() > flash_time:
             print("flashing")
-            flash(100)
+            arduino.flash()
             flash_time = None
 
         #print(f"tc: {total_closed}, cc: {consecutive_closed}, co: {consecutive_open}")
         # grab the frame from the video stream, resize
         # it, and convert it to grayscale
         # channels)
-        ret, frame_raw = vs.read()
-        if not ret:
-            continue
+
         SF = 2
         #frame_large = imutils.resize(frame_raw, width=1440)
         frame_large = frame_raw.copy()
@@ -111,6 +117,11 @@ def main():
         rightEAR = 0
         EARs = []
         for rect in rects:
+            left = (rect.left() * 100) // 1280
+            right = (rect.right() * 100) // 1280
+
+            arduino.set_region(left, right, 0x0000ff)
+
             rect_large = dlib.rectangle(rect.left() * SF, rect.top() * SF, rect.right() * SF, rect.bottom() * SF)
             cv2.rectangle(frame_large, (rect.left() * SF, rect.top() * SF), (rect.right() * SF, rect.bottom() * SF), (255, 0, 0))
 
@@ -227,6 +238,9 @@ def main():
         key = cv2.waitKey(1) & 0xFF
         if key == ord(" "):
             enabled = not enabled  # toggle
+            #if enabled:
+            #    arduino.slide_on()
+
         if key == ord("f"):
             flash_time = datetime.datetime.now() + datetime.timedelta(seconds=random.randint(0, MAX_FLASH_DELAY))
             print(f"flashing at {flash_time}")
