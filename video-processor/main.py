@@ -74,22 +74,23 @@ def main():
             flash_time = None
 
         if last_photo is not None: 
-            cv2.putText(last_photo, f"Press 1 to post online, 2 to try again", (10, 70), TEXT_FONT, TEXT_FONT_SCALE, TEXT_COLOR_BLUE, 5)
-            cv2.imshow(DISPLAY_WINDOW_NAME, last_photo)
+            modified_last_photo = last_photo.copy()
+            cv2.putText(modified_last_photo, f"Press 1 to post online, 2 to try again", (10, 70), TEXT_FONT, TEXT_FONT_SCALE, TEXT_COLOR_BLUE, 5)
+            cv2.imshow(DISPLAY_WINDOW_NAME, modified_last_photo)
 
             key = cv2.waitKey(1) & 0xFF
             if key == ord("1"):
                 if SHOULD_UPLOAD_IMAGES_TO_S3:
                     # Upload produced images to S3
                     print("Uploading image to S3 ... ", end="")
-                    thread = threading.Thread(target = uploadToS3, args = [frame_raw])
+                    thread = threading.Thread(target = uploadToS3, args = [last_photo])
                     thread.start() # Use multithreading to not block the video stream
                 
                 # Write photo to local storage
                 timestamp = datetime.now().strftime("%Y-%m-%dT%H-%M-%S")
                 photoPath = SAVED_PHOTOS_PATH + timestamp + ".png"
                 print(photoPath)
-                cv2.imwrite(photoPath, frame_raw)
+                cv2.imwrite(photoPath, last_photo)
                 last_photo = None
             if key == ord("2"):
                 last_photo = None
